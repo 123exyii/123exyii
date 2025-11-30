@@ -1,0 +1,701 @@
+game.Workspace.FallenPartsDestroyHeight = -50000
+
+_G.AutoFarm = false
+_G.CanTouchEnabled = true
+_G.KillAllNPCs = false
+_G.CollectInterval = 1
+_G.TeleportInterval = 1
+_G.WaitInterval = 2
+_G.BelowDistance = 6.5
+
+if game:GetService("CoreGui"):FindFirstChild("WOTScriptGui") then
+    game:GetService("CoreGui").WOTScriptGui:Destroy()
+end
+
+local WOTScriptGui = Instance.new("ScreenGui")
+WOTScriptGui.Name = "WOTScriptGui"
+WOTScriptGui.Parent = game.CoreGui
+WOTScriptGui.ResetOnSpawn = false
+
+local MainFrame = Instance.new("Frame")
+MainFrame.Parent = WOTScriptGui
+MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+MainFrame.BorderSizePixel = 0
+MainFrame.Position = UDim2.new(0.5, -100, 0.5, -25)
+MainFrame.Size = UDim2.new(0, 200, 0, 50)
+MainFrame.Active = true
+MainFrame.Draggable = true
+
+local mainCorner = Instance.new("UICorner")
+mainCorner.CornerRadius = UDim.new(0, 12)
+mainCorner.Parent = MainFrame
+
+local TitleBar = Instance.new("Frame")
+TitleBar.Parent = MainFrame
+TitleBar.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+TitleBar.BorderSizePixel = 0
+TitleBar.Size = UDim2.new(1, 0, 0, 40)
+
+local titleCorner = Instance.new("UICorner")
+titleCorner.CornerRadius = UDim.new(0, 12)
+titleCorner.Parent = TitleBar
+
+local TitleLabel = Instance.new("TextLabel")
+TitleLabel.Parent = TitleBar
+TitleLabel.BackgroundTransparency = 1
+TitleLabel.Position = UDim2.new(0, 15, 0, 0)
+TitleLabel.Size = UDim2.new(0.5, 0, 1, 0)
+TitleLabel.Text = "WOT Script"
+TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+TitleLabel.TextScaled = true
+TitleLabel.Font = Enum.Font.SourceSansBold
+
+local ToggleButton = Instance.new("TextButton")
+ToggleButton.Parent = TitleBar
+ToggleButton.BackgroundColor3 = Color3.fromRGB(100, 100, 255)
+ToggleButton.Position = UDim2.new(1, -70, 0.5, -12.5)
+ToggleButton.Size = UDim2.new(0, 25, 0, 25)
+ToggleButton.Text = "▼"
+ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+ToggleButton.TextScaled = true
+ToggleButton.Font = Enum.Font.SourceSansBold
+
+local toggleCorner = Instance.new("UICorner")
+toggleCorner.CornerRadius = UDim.new(0, 6)
+toggleCorner.Parent = ToggleButton
+
+local CloseButton = Instance.new("TextButton")
+CloseButton.Parent = TitleBar
+CloseButton.BackgroundColor3 = Color3.fromRGB(255, 60, 60)
+CloseButton.Position = UDim2.new(1, -35, 0.5, -12.5)
+CloseButton.Size = UDim2.new(0, 25, 0, 25)
+CloseButton.Text = "×"
+CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+CloseButton.TextScaled = true
+CloseButton.Font = Enum.Font.SourceSansBold
+
+local closeCorner = Instance.new("UICorner")
+closeCorner.CornerRadius = UDim.new(0, 6)
+closeCorner.Parent = CloseButton
+
+local ContentFrame = Instance.new("ScrollingFrame")
+ContentFrame.Parent = MainFrame
+ContentFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+ContentFrame.BorderSizePixel = 0
+ContentFrame.Position = UDim2.new(0, 5, 0, 45)
+ContentFrame.Size = UDim2.new(1, -10, 0, 405)
+ContentFrame.ScrollBarThickness = 4
+ContentFrame.CanvasSize = UDim2.new(0, 0, 0, 500)
+ContentFrame.Visible = false
+
+local contentCorner = Instance.new("UICorner")
+contentCorner.CornerRadius = UDim.new(0, 8)
+contentCorner.Parent = ContentFrame
+
+local isExpanded = false
+
+local function toggleExpand()
+    isExpanded = not isExpanded
+    if isExpanded then
+        MainFrame:TweenSize(UDim2.new(0, 200, 0, 455), "Out", "Quad", 0.3)
+        ContentFrame.Visible = true
+        ToggleButton.Text = "▲"
+    else
+        MainFrame:TweenSize(UDim2.new(0, 200, 0, 50), "Out", "Quad", 0.3)
+        ContentFrame.Visible = false
+        ToggleButton.Text = "▼"
+    end
+end
+
+ToggleButton.MouseButton1Click:Connect(toggleExpand)
+
+local AutoFarmButton = Instance.new("TextButton")
+AutoFarmButton.Parent = ContentFrame
+AutoFarmButton.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
+AutoFarmButton.Position = UDim2.new(0.5, -85, 0, 10)
+AutoFarmButton.Size = UDim2.new(0, 170, 0, 35)
+AutoFarmButton.Text = "Auto Farm: OFF"
+AutoFarmButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+AutoFarmButton.TextScaled = true
+AutoFarmButton.Font = Enum.Font.SourceSansBold
+
+local farmCorner = Instance.new("UICorner")
+farmCorner.CornerRadius = UDim.new(0, 8)
+farmCorner.Parent = AutoFarmButton
+
+local KillNPCsButton = Instance.new("TextButton")
+KillNPCsButton.Parent = ContentFrame
+KillNPCsButton.Position = UDim2.new(0.5, -85, 0, 50)
+KillNPCsButton.Size = UDim2.new(0, 170, 0, 35)
+KillNPCsButton.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
+KillNPCsButton.Text = "Kill NPCs: OFF"
+KillNPCsButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+KillNPCsButton.TextScaled = true
+KillNPCsButton.Font = Enum.Font.SourceSansBold
+
+local killCorner = Instance.new("UICorner")
+killCorner.CornerRadius = UDim.new(0, 8)
+killCorner.Parent = KillNPCsButton
+
+local CanTouchButton = Instance.new("TextButton")
+CanTouchButton.Parent = ContentFrame
+CanTouchButton.Position = UDim2.new(0.5, -85, 0, 90)
+CanTouchButton.Size = UDim2.new(0, 170, 0, 35)
+CanTouchButton.BackgroundColor3 = Color3.fromRGB(50, 200, 50)
+CanTouchButton.Text = "CanTouch: ON"
+CanTouchButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+CanTouchButton.TextScaled = true
+CanTouchButton.Font = Enum.Font.SourceSansBold
+
+local touchCorner = Instance.new("UICorner")
+touchCorner.CornerRadius = UDim.new(0, 8)
+touchCorner.Parent = CanTouchButton
+
+local TpToHell5Button = Instance.new("TextButton")
+TpToHell5Button.Parent = ContentFrame
+TpToHell5Button.Position = UDim2.new(0.5, -85, 0, 130)
+TpToHell5Button.Size = UDim2.new(0, 170, 0, 35)
+TpToHell5Button.BackgroundColor3 = Color3.fromRGB(150, 50, 200)
+TpToHell5Button.Text = "TpToHell5"
+TpToHell5Button.TextColor3 = Color3.fromRGB(255, 255, 255)
+TpToHell5Button.TextScaled = true
+TpToHell5Button.Font = Enum.Font.SourceSansBold
+
+local tpCorner = Instance.new("UICorner")
+tpCorner.CornerRadius = UDim.new(0, 8)
+tpCorner.Parent = TpToHell5Button
+
+local GetFallenButton = Instance.new("TextButton")
+GetFallenButton.Parent = ContentFrame
+GetFallenButton.Position = UDim2.new(0.5, -85, 0, 170)
+GetFallenButton.Size = UDim2.new(0, 170, 0, 35)
+GetFallenButton.BackgroundColor3 = Color3.fromRGB(200, 100, 50)
+GetFallenButton.Text = "GetfallenMenace"
+GetFallenButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+GetFallenButton.TextScaled = true
+GetFallenButton.Font = Enum.Font.SourceSansBold
+
+local fallenCorner = Instance.new("UICorner")
+fallenCorner.CornerRadius = UDim.new(0, 8)
+fallenCorner.Parent = GetFallenButton
+
+local IntervalLabel = Instance.new("TextLabel")
+IntervalLabel.Parent = ContentFrame
+IntervalLabel.BackgroundTransparency = 1
+IntervalLabel.Position = UDim2.new(0.5, -85, 0, 215)
+IntervalLabel.Size = UDim2.new(0, 170, 0, 20)
+IntervalLabel.Text = "Interval Settings"
+IntervalLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+IntervalLabel.TextScaled = true
+IntervalLabel.Font = Enum.Font.SourceSansBold
+
+local CollectLabel = Instance.new("TextLabel")
+CollectLabel.Parent = ContentFrame
+CollectLabel.BackgroundTransparency = 1
+CollectLabel.Position = UDim2.new(0, 10, 0, 240)
+CollectLabel.Size = UDim2.new(0, 65, 0, 25)
+CollectLabel.Text = "Collect:"
+CollectLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+CollectLabel.TextScaled = true
+CollectLabel.Font = Enum.Font.SourceSans
+
+local CollectInput = Instance.new("TextBox")
+CollectInput.Parent = ContentFrame
+CollectInput.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+CollectInput.Position = UDim2.new(0, 80, 0, 240)
+CollectInput.Size = UDim2.new(0, 100, 0, 25)
+CollectInput.Text = tostring(_G.CollectInterval)
+CollectInput.TextColor3 = Color3.fromRGB(255, 255, 255)
+CollectInput.TextScaled = true
+CollectInput.Font = Enum.Font.SourceSans
+
+local collectInputCorner = Instance.new("UICorner")
+collectInputCorner.CornerRadius = UDim.new(0, 4)
+collectInputCorner.Parent = CollectInput
+
+local TeleportLabel = Instance.new("TextLabel")
+TeleportLabel.Parent = ContentFrame
+TeleportLabel.BackgroundTransparency = 1
+TeleportLabel.Position = UDim2.new(0, 10, 0, 270)
+TeleportLabel.Size = UDim2.new(0, 65, 0, 25)
+TeleportLabel.Text = "Teleport:"
+TeleportLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+TeleportLabel.TextScaled = true
+TeleportLabel.Font = Enum.Font.SourceSans
+
+local TeleportInput = Instance.new("TextBox")
+TeleportInput.Parent = ContentFrame
+TeleportInput.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+TeleportInput.Position = UDim2.new(0, 80, 0, 270)
+TeleportInput.Size = UDim2.new(0, 100, 0, 25)
+TeleportInput.Text = tostring(_G.TeleportInterval)
+TeleportInput.TextColor3 = Color3.fromRGB(255, 255, 255)
+TeleportInput.TextScaled = true
+TeleportInput.Font = Enum.Font.SourceSans
+
+local teleportInputCorner = Instance.new("UICorner")
+teleportInputCorner.CornerRadius = UDim.new(0, 4)
+teleportInputCorner.Parent = TeleportInput
+
+local WaitLabel = Instance.new("TextLabel")
+WaitLabel.Parent = ContentFrame
+WaitLabel.BackgroundTransparency = 1
+WaitLabel.Position = UDim2.new(0, 10, 0, 300)
+WaitLabel.Size = UDim2.new(0, 65, 0, 25)
+WaitLabel.Text = "Wait:"
+WaitLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+WaitLabel.TextScaled = true
+WaitLabel.Font = Enum.Font.SourceSans
+
+local WaitInput = Instance.new("TextBox")
+WaitInput.Parent = ContentFrame
+WaitInput.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+WaitInput.Position = UDim2.new(0, 80, 0, 300)
+WaitInput.Size = UDim2.new(0, 100, 0, 25)
+WaitInput.Text = tostring(_G.WaitInterval)
+WaitInput.TextColor3 = Color3.fromRGB(255, 255, 255)
+WaitInput.TextScaled = true
+WaitInput.Font = Enum.Font.SourceSans
+
+local waitInputCorner = Instance.new("UICorner")
+waitInputCorner.CornerRadius = UDim.new(0, 4)
+waitInputCorner.Parent = WaitInput
+
+local BelowLabel = Instance.new("TextLabel")
+BelowLabel.Parent = ContentFrame
+BelowLabel.BackgroundTransparency = 1
+BelowLabel.Position = UDim2.new(0, 10, 0, 330)
+BelowLabel.Size = UDim2.new(0, 65, 0, 25)
+BelowLabel.Text = "Below:"
+BelowLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+BelowLabel.TextScaled = true
+BelowLabel.Font = Enum.Font.SourceSans
+
+local BelowInput = Instance.new("TextBox")
+BelowInput.Parent = ContentFrame
+BelowInput.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+BelowInput.Position = UDim2.new(0, 80, 0, 330)
+BelowInput.Size = UDim2.new(0, 100, 0, 25)
+BelowInput.Text = tostring(_G.BelowDistance)
+BelowInput.TextColor3 = Color3.fromRGB(255, 255, 255)
+BelowInput.TextScaled = true
+BelowInput.Font = Enum.Font.SourceSans
+
+local belowInputCorner = Instance.new("UICorner")
+belowInputCorner.CornerRadius = UDim.new(0, 4)
+belowInputCorner.Parent = BelowInput
+
+local toolSpawnTimes = {}
+local noclipConnection = nil
+
+local function monitorTools()
+    local cupsFolder = workspace:FindFirstChild("Cups")
+    if cupsFolder then
+        cupsFolder.ChildAdded:Connect(function(child)
+            if child:IsA("Tool") then
+                toolSpawnTimes[child] = tick()
+            end
+        end)
+        
+        cupsFolder.ChildRemoved:Connect(function(child)
+            if toolSpawnTimes[child] then
+                toolSpawnTimes[child] = nil
+            end
+        end)
+        
+        for _, tool in pairs(cupsFolder:GetChildren()) do
+            if tool:IsA("Tool") then
+                toolSpawnTimes[tool] = tick()
+            end
+        end
+    end
+    
+    workspace.ChildAdded:Connect(function(child)
+        if child:IsA("Tool") then
+            toolSpawnTimes[child] = tick()
+        end
+    end)
+    
+    workspace.ChildRemoved:Connect(function(child)
+        if toolSpawnTimes[child] then
+            toolSpawnTimes[child] = nil
+        end
+    end)
+    
+    for _, child in pairs(workspace:GetChildren()) do
+        if child:IsA("Tool") then
+            toolSpawnTimes[child] = tick()
+        end
+    end
+end
+
+monitorTools()
+
+local function getCollectableTools()
+    local tools = {}
+    local trollgeBoxes = {}
+    local currentTime = tick()
+    
+    local cupsFolder = workspace:FindFirstChild("Cups")
+    if cupsFolder then
+        for _, tool in pairs(cupsFolder:GetChildren()) do
+            if tool:IsA("Tool") then
+                local spawnTime = toolSpawnTimes[tool] or 0
+                if currentTime - spawnTime >= _G.WaitInterval then
+                    local handle = tool:FindFirstChild("Handle")
+                    if handle and handle:FindFirstChild("ProximityPrompt") then
+                        if tool.Name == "TrollgeBox" then
+                            table.insert(trollgeBoxes, tool)
+                        else
+                            table.insert(tools, tool)
+                        end
+                    end
+                end
+            end
+        end
+    end
+    
+    for _, child in pairs(workspace:GetChildren()) do
+        if child:IsA("Tool") and child.Parent ~= cupsFolder then
+            local spawnTime = toolSpawnTimes[child] or 0
+            if currentTime - spawnTime >= _G.WaitInterval then
+                local handle = child:FindFirstChild("Handle")
+                if handle and handle:FindFirstChild("ProximityPrompt") then
+                    if child.Name == "TrollgeBox" then
+                        table.insert(trollgeBoxes, child)
+                    else
+                        table.insert(tools, child)
+                    end
+                end
+            end
+        end
+    end
+    
+    for _, box in ipairs(trollgeBoxes) do
+        table.insert(tools, 1, box)
+    end
+    
+    return tools
+end
+
+local function enableFloat()
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+    local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+    
+    if humanoidRootPart then
+        if humanoidRootPart:FindFirstChild("BodyPosition") then
+            humanoidRootPart:FindFirstChild("BodyPosition"):Destroy()
+        end
+        if humanoidRootPart:FindFirstChild("BodyGyro") then
+            humanoidRootPart:FindFirstChild("BodyGyro"):Destroy()
+        end
+        
+        local bodyPosition = Instance.new("BodyPosition")
+        bodyPosition.MaxForce = Vector3.new(4000, 4000, 4000)
+        bodyPosition.Position = humanoidRootPart.Position
+        bodyPosition.Parent = humanoidRootPart
+        
+        local bodyGyro = Instance.new("BodyGyro")
+        bodyGyro.MaxTorque = Vector3.new(4000, 4000, 4000)
+        bodyGyro.CFrame = humanoidRootPart.CFrame
+        bodyGyro.Parent = humanoidRootPart
+    end
+end
+
+local function disableFloat()
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+    local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+    
+    if humanoidRootPart then
+        if humanoidRootPart:FindFirstChild("BodyPosition") then
+            humanoidRootPart:FindFirstChild("BodyPosition"):Destroy()
+        end
+        
+        if humanoidRootPart:FindFirstChild("BodyGyro") then
+            humanoidRootPart:FindFirstChild("BodyGyro"):Destroy()
+        end
+    end
+end
+
+local function enableNoclip()
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+    
+    noclipConnection = game:GetService("RunService").Stepped:Connect(function()
+        if character then
+            for _, part in pairs(character:GetDescendants()) do
+                if part:IsA("BasePart") and part.CanCollide then
+                    part.CanCollide = false
+                end
+            end
+        end
+    end)
+end
+
+local function disableNoclip()
+    if noclipConnection then
+        noclipConnection:Disconnect()
+        noclipConnection = nil
+    end
+    
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+    
+    if character then
+        for _, part in pairs(character:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.CanCollide = true
+            end
+        end
+    end
+end
+
+local function autoFarmLoop()
+    while _G.AutoFarm do
+        local player = game.Players.LocalPlayer
+        local character = player.Character
+        if not character then
+            wait(1)
+            continue
+        end
+        
+        local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+        if not humanoidRootPart then
+            wait(1)
+            continue
+        end
+        
+        if not humanoidRootPart:FindFirstChild("BodyPosition") or not humanoidRootPart:FindFirstChild("BodyGyro") then
+            enableFloat()
+        end
+        
+        local tools = getCollectableTools()
+        
+        for _, tool in pairs(tools) do
+            if not _G.AutoFarm then break end
+            
+            local handle = tool:FindFirstChild("Handle")
+            if handle and handle:FindFirstChild("ProximityPrompt") then
+                local targetPosition = handle.Position - Vector3.new(0, _G.BelowDistance, 0)
+                
+                if humanoidRootPart:FindFirstChild("BodyPosition") then
+                    humanoidRootPart.BodyPosition.Position = targetPosition
+                end
+                
+                humanoidRootPart.CFrame = CFrame.new(targetPosition)
+                
+                wait(_G.TeleportInterval)
+                
+                local collected = false
+                local startTime = tick()
+                
+                while not collected and _G.AutoFarm and (tick() - startTime) < 1.5 do
+                    if not tool.Parent then
+                        collected = true
+                        break
+                    end
+                    
+                    local currentTargetPosition = handle.Position - Vector3.new(0, _G.BelowDistance, 0)
+                    
+                    if humanoidRootPart:FindFirstChild("BodyPosition") then
+                        humanoidRootPart.BodyPosition.Position = currentTargetPosition
+                    end
+                    
+                    humanoidRootPart.CFrame = CFrame.new(currentTargetPosition)
+                    
+                    local prompt = handle:FindFirstChild("ProximityPrompt")
+                    if prompt and (humanoidRootPart.Position - handle.Position).Magnitude < 10 then
+                        fireproximityprompt(prompt)
+                    end
+                    
+                    wait(0.1)
+                end
+                
+                if collected or (tick() - startTime) >= 2.5 then
+                    wait(_G.CollectInterval)
+                end
+            end
+        end
+        
+        wait(0.5)
+    end
+end
+
+local function killNPCsLoop()
+    while _G.KillAllNPCs do
+        for _, v in pairs(workspace:GetDescendants()) do
+            if v:IsA("Model") and v:FindFirstChild("Humanoid") and not game.Players:GetPlayerFromCharacter(v) then
+                pcall(function()
+                    v.Humanoid.Health = 0
+                end)
+            end
+        end
+        wait(2)
+    end
+end
+
+local function setCanTouch(enabled)
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+    
+    for _, part in pairs(character:GetDescendants()) do
+        if part:IsA("BasePart") then
+            pcall(function()
+                part.CanTouch = enabled
+            end)
+        end
+    end
+end
+
+local function removeCupTools()
+    local function removeTool(tool)
+        local toolName = tool.Name:lower()
+        if toolName == "normalcup" or toolName == "bloodcup" then
+            pcall(function()
+                tool:Destroy()
+            end)
+        end
+    end
+    
+    local cupsFolder = workspace:FindFirstChild("Cups")
+    if cupsFolder then
+        for _, child in pairs(cupsFolder:GetChildren()) do
+            if child:IsA("Tool") then
+                removeTool(child)
+            end
+        end
+    end
+    
+    for _, child in pairs(workspace:GetChildren()) do
+        if child:IsA("Tool") then
+            removeTool(child)
+        end
+    end
+end
+
+CloseButton.MouseButton1Click:Connect(function()
+    _G.AutoFarm = false
+    _G.KillAllNPCs = false
+    _G.CanTouchEnabled = true
+    disableFloat()
+    disableNoclip()
+    WOTScriptGui:Destroy()
+end)
+
+AutoFarmButton.MouseButton1Click:Connect(function()
+    _G.AutoFarm = not _G.AutoFarm
+    if _G.AutoFarm then
+        AutoFarmButton.BackgroundColor3 = Color3.fromRGB(50, 200, 50)
+        AutoFarmButton.Text = "Auto Farm: ON"
+        enableFloat()
+        enableNoclip()
+        spawn(autoFarmLoop)
+    else
+        AutoFarmButton.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
+        AutoFarmButton.Text = "Auto Farm: OFF"
+        disableFloat()
+        disableNoclip()
+    end
+end)
+
+KillNPCsButton.MouseButton1Click:Connect(function()
+    _G.KillAllNPCs = not _G.KillAllNPCs
+    if _G.KillAllNPCs then
+        KillNPCsButton.BackgroundColor3 = Color3.fromRGB(50, 200, 50)
+        KillNPCsButton.Text = "Kill NPCs: ON"
+        spawn(killNPCsLoop)
+    else
+        KillNPCsButton.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
+        KillNPCsButton.Text = "Kill NPCs: OFF"
+    end
+end)
+
+CanTouchButton.MouseButton1Click:Connect(function()
+    _G.CanTouchEnabled = not _G.CanTouchEnabled
+    if _G.CanTouchEnabled then
+        CanTouchButton.BackgroundColor3 = Color3.fromRGB(50, 200, 50)
+        CanTouchButton.Text = "CanTouch: ON"
+    else
+        CanTouchButton.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
+        CanTouchButton.Text = "CanTouch: OFF"
+    end
+    setCanTouch(_G.CanTouchEnabled)
+end)
+
+TpToHell5Button.MouseButton1Click:Connect(function()
+    game:GetService("TeleportService"):Teleport(75661637882183)
+end)
+
+GetFallenButton.MouseButton1Click:Connect(function()
+    local player = game.Players.LocalPlayer
+    local character = player.Character or player.CharacterAdded:Wait()
+    local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+    
+    local referenceParts = workspace:FindFirstChild("ReferenceParts")
+    if referenceParts then
+        local fallenFolder = referenceParts:FindFirstChild("Fallen statue")
+        if fallenFolder then
+            local fallenModel = fallenFolder:FindFirstChild("Fallen statue")
+            if fallenModel then
+                local torso = fallenModel:FindFirstChild("Torso")
+                if torso then
+                    humanoidRootPart.CFrame = torso.CFrame + Vector3.new(0, 3, 0)
+                    wait(0.5)
+                    local prompt = torso:FindFirstChildOfClass("ProximityPrompt")
+                    if prompt then
+                        fireproximityprompt(prompt)
+                    end
+                end
+            end
+        end
+    end
+end)
+
+CollectInput:GetPropertyChangedSignal("Text"):Connect(function()
+    local value = tonumber(CollectInput.Text)
+    if value then
+        _G.CollectInterval = value
+    else
+        CollectInput.Text = tostring(_G.CollectInterval)
+    end
+end)
+
+TeleportInput:GetPropertyChangedSignal("Text"):Connect(function()
+    local value = tonumber(TeleportInput.Text)
+    if value then
+        _G.TeleportInterval = value
+    else
+        TeleportInput.Text = tostring(_G.TeleportInterval)
+    end
+end)
+
+WaitInput:GetPropertyChangedSignal("Text"):Connect(function()
+    local value = tonumber(WaitInput.Text)
+    if value then
+        _G.WaitInterval = value
+    else
+        WaitInput.Text = tostring(_G.WaitInterval)
+    end
+end)
+
+BelowInput:GetPropertyChangedSignal("Text"):Connect(function()
+    local value = tonumber(BelowInput.Text)
+    if value then
+        _G.BelowDistance = value
+    else
+        BelowInput.Text = tostring(_G.BelowDistance)
+    end
+end)
+
+game.Players.LocalPlayer.CharacterAdded:Connect(function(character)
+    wait(1)
+    if _G.AutoFarm then
+        enableFloat()
+        enableNoclip()
+    end
+    setCanTouch(_G.CanTouchEnabled)
+end)
+
+removeCupTools()
